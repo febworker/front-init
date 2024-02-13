@@ -53,38 +53,34 @@ class HttpHandler(BaseHTTPRequestHandler):
             with open('message.html', 'rb') as file:
                 self.wfile.write(file.read())
 
-            self.send_data_to_socket(form_data)
+            # Виклик функції save_data_to_json для збереження даних у файл
+            self.save_data_to_json(form_data)
         else:
             self.send_error(404, "Page not found")
 
-    def send_data_to_socket(self, data):
+    # Функція для збереження даних у JSON файл і обробки помилок
+    def save_data_to_json(self, data):
         try:
-            with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                server_address = ('0.0.0.0', PORT_SOCKET)
-                message = json.dumps(data).encode('utf-8')
-                sock.sendto(message, server_address)
-        except Exception as e:
-            print(f"Error sending data to socket server: {e}")
+            os.makedirs('storage', exist_ok=True)
+            with open('storage/data.json', 'r') as file:
+                json_data = json.load(file)
+        except FileNotFoundError:
+            json_data = {}
+        except ValueError as ve:
+            print(f"Error parsing JSON: {ve}")
+            return
+
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
+        json_data[current_time] = data
+
+        with open('storage/data.json', 'w') as file:
+            json.dump(json_data, file, indent=4)
 
 class SocketHandler(socketserver.BaseRequestHandler):
     def handle(self):
         data, _ = self.request
         received_data = json.loads(data.decode('utf-8'))
-        save_data_to_json(received_data)
-
-def save_data_to_json(data):
-    try:
-        os.makedirs('storage', exist_ok=True)
-        with open('storage/data.json', 'r') as file:
-            json_data = json.load(file)
-    except FileNotFoundError:
-        json_data = {}
-
-    current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
-    json_data[current_time] = data
-
-    with open('storage/data.json', 'w') as file:
-        json.dump(json_data, file, indent=4)
+        HttpHandler().save_data_to_json(received_data)
 
 def run_http_server():
     with HTTPServer(('0.0.0.0', PORT_HTTP), HttpHandler) as http_server:
