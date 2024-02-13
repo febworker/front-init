@@ -60,7 +60,7 @@ class HttpHandler(BaseHTTPRequestHandler):
     def send_data_to_socket(self, data):
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
-                server_address = ('localhost', PORT_SOCKET)
+                server_address = ('0.0.0.0', PORT_SOCKET)
                 message = json.dumps(data).encode('utf-8')
                 sock.sendto(message, server_address)
         except Exception as e:
@@ -74,6 +74,7 @@ class SocketHandler(socketserver.BaseRequestHandler):
 
 def save_data_to_json(data):
     try:
+        os.makedirs('storage', exist_ok=True)
         with open('storage/data.json', 'r') as file:
             json_data = json.load(file)
     except FileNotFoundError:
@@ -82,17 +83,16 @@ def save_data_to_json(data):
     current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')
     json_data[current_time] = data
 
-    os.makedirs('storage', exist_ok=True)
     with open('storage/data.json', 'w') as file:
         json.dump(json_data, file, indent=4)
 
 def run_http_server():
-    http_server = HTTPServer(('localhost', PORT_HTTP), HttpHandler)
-    print(f"HTTP server running on port {PORT_HTTP}")
-    http_server.serve_forever()
+    with HTTPServer(('0.0.0.0', PORT_HTTP), HttpHandler) as http_server:
+        print(f"HTTP server running on port {PORT_HTTP}")
+        http_server.serve_forever()
 
 def run_socket_server():
-    with socketserver.UDPServer(('localhost', PORT_SOCKET), SocketHandler) as sock_server:
+    with socketserver.UDPServer(('0.0.0.0', PORT_SOCKET), SocketHandler) as sock_server:
         print(f"Socket server running on port {PORT_SOCKET}")
         sock_server.serve_forever()
 
