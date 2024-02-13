@@ -1,0 +1,42 @@
+/* Загальні стилі для всіх сторінок */
+body {
+    font-family: Arial, sans-serif;
+}
+
+/* Стилі для заголовка */
+h1 {
+    color: blue;
+}
+
+/* Стилі для форми */
+form {
+    margin-top: 20px;
+}
+
+/* Стилі для текстових полів у формі */
+input[type="text"], input[type="password"] {
+    width: 100%;
+    padding: 10px;
+    margin: 5px 0;
+}
+
+/* Стилі для кнопок у формі */
+input[type="submit"] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    cursor: pointer;
+}
+
+/* Стилі для посилань */
+a {
+    color: blue;
+    text-decoration: none;
+}
+
+/* Стилі для зображення */
+img {
+    max-width: 100%;
+    height: auto;
+}
